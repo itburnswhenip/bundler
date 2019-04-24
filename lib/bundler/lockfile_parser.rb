@@ -90,27 +90,10 @@ module Bundler
       end
       @sources << @rubygems_aggregate unless Bundler.feature_flag.disable_multisource?
       @specs = @specs.values.sort_by(&:identifier)
-      warn_for_outdated_bundler_version
     rescue ArgumentError => e
       Bundler.ui.debug(e)
       raise LockfileError, "Your lockfile is unreadable. Run `rm #{Bundler.default_lockfile.relative_path_from(SharedHelpers.pwd)}` " \
         "and then `bundle install` to generate a new lockfile."
-    end
-
-    def warn_for_outdated_bundler_version
-      return unless bundler_version
-      prerelease_text = bundler_version.prerelease? ? " --pre" : ""
-      current_version = Gem::Version.create(Bundler::VERSION)
-      current_major_version = current_version.segments.first
-      current_locked_version = bundler_version.segments.first
-      if current_major_version < current_locked_version && current_major_version > 2
-        raise LockfileError, "You must use Bundler #{current_locked_version} or greater with this lockfile."
-      end
-      return unless current_version < bundler_version
-      Bundler.ui.warn "Warning: the running version of Bundler (#{current_version}) is older " \
-           "than the version that created the lockfile (#{bundler_version}). We suggest you to " \
-           "upgrade to the version that created the lockfile by running `gem install " \
-           "bundler:#{bundler_version}#{prerelease_text}`.\n"
     end
 
   private
